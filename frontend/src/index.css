@@ -49,6 +49,11 @@ button {
 button:hover {
   border-color: #646cff;
 }
+.cursor-highlight {
+  background-color: rgba(255, 0, 0, 0.5); /* Red for different users */
+  width: 2px;
+}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
