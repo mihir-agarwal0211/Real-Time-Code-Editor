@@ -3,7 +3,9 @@ import { Editor } from "@monaco-editor/react";
 
 const CodeEditor = () => {
   const [code, setCode] = useState("// Write your code here...");
+  const [decorations, setDecorations] = useState([]);
   const [cursorPosition, setCursorPosition] = useState({});
+  
   const socket = useRef(null);
   const editorRef = useRef(null);
 
@@ -14,7 +16,6 @@ const CodeEditor = () => {
 
     socket.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data);
 
       if (data.type === "code") {
         setCode(data.content);
@@ -31,13 +32,14 @@ const CodeEditor = () => {
   useEffect(() => {
     if (editorRef.current) {
       const editor = editorRef.current;
-  
-      let decorations = [];
-  
+      const monacoInstance = window.monaco; // Ensure monaco is available
+
+      let newDecorations = [];
+
       Object.entries(cursorPosition).forEach(([user, position]) => {
-        decorations = editor.deltaDecorations(decorations, [
+        newDecorations = editor.deltaDecorations(newDecorations, [
           {
-            range: new monaco.Range(position.lineNumber, 1, position.lineNumber, 1),
+            range: new monacoInstance.Range(position.lineNumber, 1, position.lineNumber, 1),
             options: {
               className: "cursor-marker",
               inlineClassName: "cursor-highlight",
@@ -45,9 +47,10 @@ const CodeEditor = () => {
           },
         ]);
       });
+
+      setDecorations(newDecorations); // Store updated decorations
     }
-  }, [cursorPosition]); // 👈 Runs every time cursorPosition updates
-  
+  }, [cursorPosition]); // Runs every time cursorPosition updates
 
   const handleCodeChange = (newCode) => {
     setCode(newCode);
@@ -59,7 +62,13 @@ const CodeEditor = () => {
   const handleCursorChange = (event) => {
     if (socket.current?.readyState === WebSocket.OPEN) {
       const position = event.position;
-      socket.current.send(JSON.stringify({ type: "cursor", user: "User1", cursor: position }));
+      socket.current.send(
+        JSON.stringify({
+          type: "cursor",
+          user: "User1", // Replace with dynamic username
+          cursor: position,
+        })
+      );
     }
   };
 
@@ -70,14 +79,10 @@ const CodeEditor = () => {
         language="javascript"
         theme="vs-dark"
         value={code}
-        onChange={(newCode) => {
-          setCode(newCode);
-          if (socket.current?.readyState === WebSocket.OPEN) {
-            socket.current.send(JSON.stringify({ type: "code", content: newCode }));
-          }
-        }}
-        onMount={(editor) => {
+        onChange={handleCodeChange}
+        onMount={(editor, monaco) => {
           editorRef.current = editor;
+          window.monaco = monaco; // Ensure monaco is globally available
           editor.onDidChangeCursorPosition(handleCursorChange);
         }}
       />

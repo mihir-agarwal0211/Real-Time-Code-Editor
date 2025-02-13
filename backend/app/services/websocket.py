@@ -20,6 +20,12 @@ class ConnectionManager:
             for connection in self.active_sessions[session_id]:
                 await connection.send_text(message)
 
+    async def send_cursor_update(self, session_id: str, message: str):
+        """Broadcasts a cursor movement update to all users in the same session."""
+        if session_id in self.active_sessions:
+            for connection in self.active_sessions[session_id]:
+                await connection.send_text(message)  # Send cursor data
+
     async def disconnect(self, session_id: str, websocket: WebSocket):
         """Removes a WebSocket connection from the session."""
         self.active_sessions[session_id].remove(websocket)
