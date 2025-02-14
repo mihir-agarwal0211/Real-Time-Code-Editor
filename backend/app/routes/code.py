@@ -13,12 +13,17 @@ async def websocket_endpoint(session_id: str, websocket: WebSocket):
             data = await websocket.receive_text()
             parsed_data = json.loads(data)
             # Broadcast both code changes & cursor updates
-            await manager.send_code_update(session_id, json.dumps(parsed_data))
-            print(f"📩 Received WebSocket Message: {parsed_data}")  # Debugging
-
-            if parsed_data["type"] == "cursor":
-                print(f"📍 Cursor update received from {parsed_data['user']}: {parsed_data['cursor']}")
-                await manager.send_cursor_update(session_id, json.dumps(parsed_data))
+            if parsed_data["type"] == "code":
+                await manager.send_code_update(session_id, json.dumps(parsed_data))
+            
+            elif parsed_data["type"] == "cursor":
+                print(f"🖱 Received Cursor Update from {data}")
+                # ✅ Extract user ID from message and broadcast it
+                await manager.send_cursor_update(session_id, json.dumps({
+                    "type": "cursor",
+                    "user": parsed_data["user"],  # ✅ Includes userId
+                    "cursor": parsed_data["cursor"]
+                }))
 
     except WebSocketDisconnect:
         await manager.disconnect(session_id, websocket)

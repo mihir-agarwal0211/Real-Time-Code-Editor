@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Editor } from "@monaco-editor/react";
+import { v4 as uuidv4 } from "uuid";  // ✅ Import UUID
+
+
 
 const CodeEditor = () => {
   const [code, setCode] = useState("// Write your code here...");
+  const userId = useRef(uuidv4());  // ✅ Generate unique user ID per session
   const [decorations, setDecorations] = useState([]); // Store cursor decorations
   const [cursorPosition, setCursorPosition] = useState({});
 
@@ -21,8 +25,8 @@ const CodeEditor = () => {
       if (data.type === "code") {
         setCode(data.content);
       } else if (data.type === "cursor") {
-        setCursorPosition((prev) => ({ ...prev, [data.user]: data.cursor }));
-        console.log("📥 Received Cursor Update:", data);
+        setCursorPosition((prev) => ({ ...prev, [data.user]: data.cursor })); 
+        console.log("📌 Updated Cursor Positions:", cursorPosition);
       }
     };
 
@@ -79,11 +83,11 @@ const CodeEditor = () => {
       const position = event.position;
       const cursorUpdate = {
         type: "cursor",
-        user: "User1", // Replace with dynamic username
+        user: userId.current, // Replace with dynamic username
         cursor: position,
       };
 
-      // console.log("📤 Sending Cursor Update:", cursorUpdate);
+      console.log("📤 Sending Cursor Update:", JSON.stringify(cursorUpdate));
       socket.current.send(JSON.stringify(cursorUpdate));
     }
   };
