@@ -41,13 +41,3 @@
   color: #888;
 }
 
-.cursor-marker {
-  position: absolute;
-  width: 2px;
-  background-color: #ff4500; /* Orange cursor */
-  opacity: 0.8;
-}
-
-.cursor-highlight {
-  background-color: rgba(255, 69, 0, 0.3); /* Light orange highlight */
-}

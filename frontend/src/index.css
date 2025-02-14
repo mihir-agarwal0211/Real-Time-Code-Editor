@@ -49,10 +49,6 @@ button {
 button:hover {
   border-color: #646cff;
 }
-.cursor-highlight {
-  background-color: rgba(255, 0, 0, 0.5); /* Red for different users */
-  width: 2px;
-}
 
 button:focus,
 button:focus-visible {
@@ -70,4 +66,21 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.cursor-marker {
+  position: absolute;
+  border-left: 2px solid #ff4500 !important; /* Orange vertical cursor */
+  width: 2px;
+  height: 100%;
+  opacity: 1;
+}
+
+.cursor-highlight {
+  background-color: rgba(255, 69, 0, 0.5) !important; /* Light orange highlight */
+}
+
+.cursor-visible {
+  color: #ff4500 !important; /* Force visible cursor */
+  font-weight: bold;
 }
