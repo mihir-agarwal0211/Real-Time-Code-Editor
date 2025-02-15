@@ -25,11 +25,10 @@ async def websocket_endpoint(session_id: str, websocket: WebSocket):
                     "cursor": parsed_data["cursor"]
                 }))
 
+            elif parsed_data["type"] == "cursor":
+                print(f"🖱 Received Cursor Update from {parsed_data['user']}: {parsed_data['cursor']}")
+                await manager.send_cursor_update(session_id, parsed_data["user"], parsed_data["cursor"])
+
     except WebSocketDisconnect:
         await manager.disconnect(session_id, websocket)
         print(f"🔴 User disconnected from session {session_id}")
-
-
-
-
-

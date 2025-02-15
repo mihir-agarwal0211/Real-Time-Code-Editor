@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -8,7 +8,6 @@ class User(Base):
 
     id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
-    
     code_files = relationship("CodeFile", back_populates="owner")
 
 class CodeFile(Base):
@@ -29,6 +28,7 @@ class EditingSession(Base):
     user_id = Column(String, ForeignKey("users.id"))
     cursor_position = Column(Text, default='{"lineNumber": 1, "column": 1}')
     last_updated = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)  # Track if user is online
 
     user = relationship("User")
     file = relationship("CodeFile")

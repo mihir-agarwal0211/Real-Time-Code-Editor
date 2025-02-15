@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";  // ✅ Import UUID
 
 const CodeEditor = () => {
   const [code, setCode] = useState("// Write your code here...");
-  const userId = useRef(uuidv4());  // ✅ Generate unique user ID per session
+  // const userId = useRef(uuidv4());  // ✅ Generate unique user ID per session
   const [decorations, setDecorations] = useState([]); // Store cursor decorations
   const [cursorPosition, setCursorPosition] = useState({});
 
@@ -15,25 +15,27 @@ const CodeEditor = () => {
 
   // ✅ Establish WebSocket connection
   useEffect(() => {
-    socket.current = new WebSocket("ws://127.0.0.1:8000/ws/test-session");
+    const sessionId = "test-session";  // Use a real session ID later
+    const wsUrl = `ws://127.0.0.1:8000/ws/${sessionId}`;  // ✅ Include userId
+    socket.current = new WebSocket(wsUrl);
 
     socket.current.onopen = () => console.log("✅ Connected to WebSocket server");
-
     socket.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.type === "code") {
-        setCode(data.content);
-      } else if (data.type === "cursor") {
-        setCursorPosition((prev) => ({ ...prev, [data.user]: data.cursor })); 
-        console.log("📌 Updated Cursor Positions:", cursorPosition);
-      }
+        const data = JSON.parse(event.data);
+        
+        if (data.type === "code") {
+            setCode(data.content);
+        } else if (data.type === "allCursors") {  // ✅ Handle multiple cursor updates
+            setCursorPosition(data.cursors);
+            console.log("📌 Updated Cursor Positions:", data.cursors);
+        }
     };
 
     socket.current.onclose = () => console.log("❌ Disconnected from WebSocket server");
 
     return () => socket.current.close();
-  }, []);
+}, []);
+
 
   // ✅ Apply Cursor Decorations
   useEffect(() => {
