@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime
+from sqlalchemy import Column,Integer, String, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -8,6 +8,8 @@ class User(Base):
 
     id = Column(String, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)  # Hashed password
+    role = Column(String, default="collaborator")  # "owner" or "collaborator"
     
     code_files = relationship("CodeFile", back_populates="owner")
 

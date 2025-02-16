@@ -1,44 +1,33 @@
-import requests
+import google.generativeai as genai
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import os
 
 router = APIRouter()
 
+# ✅ Hardcoded Gemini API Key (Replace with your own key)
+GEMINI_API_KEY = "AIzaSyDTAe6xc7hDWz7Sp83puMCTX2YJevUo6Ts"
+
+# ✅ Configure the Gemini API
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Define request model
 class CodeInput(BaseModel):
     code: str
 
-# Fetch the API key from environment variables
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
-print(f"🔍 DEBUG: Hugging Face API Key: {HUGGINGFACE_API_KEY}")
-
 @router.post("/debug")
 async def debug_code(input: CodeInput):
-    """Analyzes code and provides debugging suggestions using Hugging Face API."""
-    if not HUGGINGFACE_API_KEY:
-        raise HTTPException(status_code=500, detail="Hugging Face API key is missing")
-
+    """Analyzes code and provides debugging suggestions using Gemini API."""
     try:
-        headers = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
-        
-        # ✅ Better Prompt to Guide AI
-        prompt = f"### Python Code:\n{input.code}\n### What's wrong with this code? Provide debugging suggestions:"
-
-        payload = {
-            "inputs": prompt,
-            "parameters": {"max_new_tokens": 100},  # Limit response size
-        }
-
-        response = requests.post(
-            "https://api-inference.huggingface.co/models/bigcode/santacoder",
-            headers=headers,
-            json=payload
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(
+            f"You are an Python AI coding assistant. Analyze the following code, debug it, and return only a JSON object in this exact format without any extra text:\n\n"
+            f"Input Code:\n{input.code}\n\n"
+            f"### Expected JSON Response:\n"
+            f"```json\n"
+            f"{{\n  \"error\": \"Error description here\",\n  \"fixed_code\": \"Fixed version of the code here\"\n}}\n"
+            f"```"
         )
 
-        if response.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"Hugging Face API error: {response.text}")
-
-        return {"suggestions": response.json()}
-
+        return {"suggestions": response.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
