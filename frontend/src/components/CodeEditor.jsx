@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";  // ✅ Import UUID
 const CodeEditor = () => {
   const [code, setCode] = useState("// Write your code here...");
   const userId = useRef(uuidv4());  // ✅ Generate unique user ID per session
+  const [suggestions, setSuggestions] = useState(null);
   const [decorations, setDecorations] = useState([]); // Store cursor decorations
   const [cursorPosition, setCursorPosition] = useState({});
 
@@ -31,7 +32,7 @@ const CodeEditor = () => {
     };
 
     socket.current.onclose = () => console.log("❌ Disconnected from WebSocket server");
-
+    socket.onerror = (error) => console.error("WebSocket error:", error);
     return () => socket.current.close();
   }, []);
 
@@ -76,7 +77,42 @@ const CodeEditor = () => {
       socket.current.send(JSON.stringify({ type: "code", content: newCode }));
     }
   };
+  // 🛠️ Call the AI Debugging API
+  const handleDebug = async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/debug", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
 
+      const data = await response.json();
+      console.log("🐞 Debugging Response:", data);
+      setSuggestions(data.suggestions); // Save AI suggestions
+    } catch (error) {
+      console.error("Debugging failed:", error);
+    }
+  };
+
+  // 🛠️ Apply AI-Suggested Fix
+  const applyFix = () => {
+    if (suggestions && suggestions.includes("fixed_code")) {
+      const match = suggestions.match(/```json\n([\s\S]*?)\n```/);
+      if (match){ 
+        console.log("match ->", match[1]);
+        const cleanJSON = match[1]
+        // // .replace(/\\n/g, "") // Convert escaped newlines
+        // .replace(/\\"/g, "")   // Convert escaped double quotes
+        // .trim(); 
+        const parsedData = JSON.parse(cleanJSON);
+        console.log("🛠️ Applying Fix:", cleanJSON);
+        console.log("Parsed Data:", parsedData["fixed_code"]);
+        setCode(parsedData["fixed_code"]);
+      }
+      else console.log("No Match available");
+    }
+    else console.log("No fix available");
+  };
   // ✅ Handle Cursor Position Updates
   const handleCursorChange = (event) => {
     if (socket.current?.readyState === WebSocket.OPEN) {
@@ -93,10 +129,10 @@ const CodeEditor = () => {
   };
 
   return (
-    <div style={{ height: "90vh", border: "1px solid #ccc" }}>
+    <div style={{ height: "60vh", border: "1px solid #ccc" }}>
       <Editor
         height="100%"
-        language="javascript"
+        language="python"
         theme="vs-dark"
         value={code}
         onChange={handleCodeChange}
@@ -106,6 +142,24 @@ const CodeEditor = () => {
           editor.onDidChangeCursorPosition(handleCursorChange);
         }}
       />
+
+      {/* Debugging Button */}
+      <button onClick={handleDebug} style={{ margin: "10px" }}>
+        Debug Code
+      </button>
+
+      {/* Display AI Suggestions */}
+      {suggestions && (
+        <div style={{ marginTop: "10px", color: "red", fontWeight: "bold" }}>
+          <strong>AI Suggestions:</strong>
+          <p><strong>Error : </strong>{JSON.parse(suggestions.match(/```json\n([\s\S]*?)\n```/)[1]).error}</p>
+          <p><strong>Suggestec fix : </strong>{JSON.parse(suggestions.match(/```json\n([\s\S]*?)\n```/)[1]).fixed_code}</p>
+          {/* <pre>{JSON.stringify(suggestions, null, 2)}</pre> */}
+          <button onClick={applyFix} style={{ marginTop: "5px" }}>
+            Apply Fix
+          </button>
+        </div>
+      )}
     </div>
   );
 };
