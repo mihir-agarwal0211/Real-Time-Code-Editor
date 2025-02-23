@@ -191,7 +191,10 @@ docker-compose logs -f
 # Rebuild a specific service
 docker-compose up --build backend
 ```
+## Swagger UI Documentation
+http://127.0.0.1:8000/docs
 
+## Architecture
 ```mermaid
 flowchart TB
     subgraph Client["Frontend (React)"]
