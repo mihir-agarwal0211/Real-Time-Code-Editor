@@ -28,6 +28,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 @router.post("/register")
 def register(id:str, username: str, password: str, role: str = "collaborator", db: Session = Depends(get_db)):
     """Register a new user."""
+    print("Registering - ", id, username, password, role)
     user = db.query(User).filter(User.id == id).first()
     if user:
         raise HTTPException(status_code=400, detail="User ID already exists")
