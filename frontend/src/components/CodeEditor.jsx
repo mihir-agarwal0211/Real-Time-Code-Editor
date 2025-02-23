@@ -10,9 +10,32 @@ const CodeEditor = () => {
   const [suggestions, setSuggestions] = useState(null);
   const [decorations, setDecorations] = useState([]); // Store cursor decorations
   const [cursorPosition, setCursorPosition] = useState({});
+  const [role, setRole] = useState("new");
+  const [username, setUsername] = useState(null);
 
   const socket = useRef(null);
   const editorRef = useRef(null);
+
+  // ✅ Fetch Role from JWT Token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1])); // Decode JWT payload
+        setRole(payload.role);
+        setUsername(payload.sub);
+        console.log("User Role:", payload.role);
+        console.log("User Role2:", role);
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("🎯 Role updated in state:", role);
+  }, [role]);  // ✅ Runs whenever `role` changes
+  
 
   // ✅ Establish WebSocket connection
   useEffect(() => {
@@ -72,6 +95,15 @@ const CodeEditor = () => {
 
   // ✅ Handle Code Changes
   const handleCodeChange = (newCode) => {
+    if (!role) {
+      console.warn("🚨 Role not set yet, preventing edit.");
+      return;
+    }
+  
+    if (role === "viewer") {
+      console.warn("🚨 Editing disabled for viewers.");
+      return;  // 🚫 Prevent editing
+    }
     setCode(newCode);
     if (socket.current?.readyState === WebSocket.OPEN) {
       socket.current.send(JSON.stringify({ type: "code", content: newCode }));
@@ -130,11 +162,14 @@ const CodeEditor = () => {
 
   return (
     <div style={{ height: "60vh", border: "1px solid #ccc" }}>
+        <p><strong>👤 User:</strong> {username || "Loading..."}</p>
+        <p><strong>🔑 Role:</strong> {role || "Loading..."}</p>
       <Editor
         height="100%"
         language="python"
         theme="vs-dark"
         value={code}
+        options={{ readOnly: role === "viewer" }}
         onChange={handleCodeChange}
         onMount={(editor, monaco) => {
           editorRef.current = editor;
