@@ -191,3 +191,85 @@ docker-compose logs -f
 # Rebuild a specific service
 docker-compose up --build backend
 ```
+
+```mermaid
+flowchart TB
+    subgraph Client["Frontend (React)"]
+        direction TB
+        Router["React Router"]
+        AuthContext["JWT Auth Context"]
+        subgraph Editor["Code Editor"]
+            Monaco["Monaco Editor"]
+            CursorTracker["Cursor Tracker"]
+            WSClient["WebSocket Client"]
+        end
+        subgraph Pages["Pages"]
+            Login["Login Page"]
+            Register["Register Page"]
+            EditorPage["Editor Page"]
+        end
+    end
+
+    subgraph Server["Backend (FastAPI)"]
+        direction TB
+        API["FastAPI Server"]
+        
+        subgraph AuthService["Authentication Service"]
+            JWTHandler["JWT Handler"]
+            PassHash["Password Hashing"]
+            OAuth["OAuth2 Handler"]
+        end
+        
+        subgraph Database["Database Layer"]
+            SQLAlchemy["SQLAlchemy Engine"]
+            subgraph Models["Database Models"]
+                UserModel["User Model"]
+                CodeModel["Code File Model"]
+                SessionModel["Editing Session Model"]
+            end
+        end
+        
+        subgraph WSService["WebSocket Service"]
+            ConnManager["Connection Manager"]
+            SessionHandler["Session Handler"]
+            BroadcastService["Broadcast Service"]
+        end
+        
+        subgraph AIService["AI Service"]
+            GeminiClient["Gemini Client"]
+            CodeAnalyzer["Code Analyzer"]
+        end
+    end
+
+    subgraph External["External Services"]
+        GeminiAPI["Google Gemini API"]
+        PostgreSQL[(PostgreSQL)]
+    end
+
+    %% Frontend Connections
+    Router --> AuthContext
+    Router --> Pages
+    EditorPage --> Editor
+    Monaco --> WSClient
+    Monaco --> CursorTracker
+
+    %% Backend Connections
+    WSClient --> ConnManager
+    API --> AuthService
+    API --> WSService
+    API --> AIService
+    AuthService --> Database
+    WSService --> Database
+    
+    %% External Connections
+    AIService --> GeminiAPI
+    Database --> PostgreSQL
+    
+    %% Data Flow
+    Login --> OAuth
+    Register --> PassHash
+    PassHash --> UserModel
+    SessionHandler --> BroadcastService
+    CodeAnalyzer --> GeminiClient
+```
+
