@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 const RegisterPage = () => {
   const [username, setUsername] = useState("");
@@ -16,7 +17,7 @@ const RegisterPage = () => {
     console.log("Registering:",id, username, password, role);
     try {
         const response = await axios.post(
-            "http://127.0.0.1:8000/auth/register",
+            `${API_BASE_URL}/auth/register`,
             null,
             {
                 params: {  // ✅ Send data as query parameters

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Editor } from "@monaco-editor/react";
 import { v4 as uuidv4 } from "uuid";  // ✅ Import UUID
-
+import { API_BASE_URL } from "../config";
 
 
 const CodeEditor = () => {
@@ -39,7 +39,8 @@ const CodeEditor = () => {
 
   // ✅ Establish WebSocket connection
   useEffect(() => {
-    socket.current = new WebSocket("ws://127.0.0.1:8000/ws/test-session");
+    const WS_URL = API_BASE_URL.replace("http", "ws");
+    socket.current = new WebSocket(`${WS_URL}/ws/test-session`);
 
     socket.current.onopen = () => console.log("✅ Connected to WebSocket server");
 
@@ -112,7 +113,7 @@ const CodeEditor = () => {
   // 🛠️ Call the AI Debugging API
   const handleDebug = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/debug", {
+      const response = await fetch(`${API_BASE_URL}/debug`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code }),

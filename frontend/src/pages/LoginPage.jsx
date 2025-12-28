@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -14,7 +15,7 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login",
+      `${API_BASE_URL}/auth/login`,
         new URLSearchParams({ username, password }),
         { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
