@@ -48,7 +48,9 @@ const CodeEditor = () => {
       const data = JSON.parse(event.data);
 
       if (data.type === "code") {
-        setCode(data.content);
+        if (data.senderId !== userId.current) {
+          setCode(data.content);
+        }
       } else if (data.type === "cursor") {
         setCursorPosition((prev) => ({ ...prev, [data.user]: data.cursor })); 
         console.log("📌 Updated Cursor Positions:", cursorPosition);
@@ -107,7 +109,7 @@ const CodeEditor = () => {
     }
     setCode(newCode);
     if (socket.current?.readyState === WebSocket.OPEN) {
-      socket.current.send(JSON.stringify({ type: "code", content: newCode }));
+      socket.current.send(JSON.stringify({ type: "code", content: newCode, senderId: userId.current }));
     }
   };
   // 🛠️ Call the AI Debugging API
