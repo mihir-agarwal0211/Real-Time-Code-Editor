@@ -14,6 +14,6 @@ def from_environment_variable(variable_name: str) -> str:
 DATABASE_URL = from_environment_variable("DATABASE_URL")
 # DATABASE_URL = "postgresql://mihir:mypassword@localhost/mydb"  
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL,pool_pre_ping=True,pool_recycle=300)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

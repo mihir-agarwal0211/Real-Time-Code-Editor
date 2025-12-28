@@ -1,15 +1,17 @@
 
 services:
   backend:
+    env_file:
+      - .env
     build: ./backend
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+    # depends_on:
+      # - db
       # - redis
       # - rabbitmq
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/codeeditor
+      - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     volumes:
@@ -24,18 +26,18 @@ services:
     volumes:
       - ./frontend:/app
 
-  db:
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: codeeditor
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./schema_dump.sql:/docker-entrypoint-initdb.d/schema_dump.sql
+  # db:
+  #   image: postgres:15
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: codeeditor
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #     - ./schema_dump.sql:/docker-entrypoint-initdb.d/schema_dump.sql
 
   # redis:
   #   image: redis:latest
@@ -50,5 +52,5 @@ services:
   #     - "5672:5672"
   #     - "15672:15672"
 
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:
